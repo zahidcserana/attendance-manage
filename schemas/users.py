@@ -1,13 +1,16 @@
 from pydantic import BaseModel, Field, EmailStr
 
+from models.users import UserType
+
 
 class UserBaseSchema(BaseModel):
     email: EmailStr
-    full_name: str
+    name: str
 
 
 class CreateUserSchema(UserBaseSchema):
     hashed_password: str = Field(alias="password")
+    type: str = Field(default=UserType.user)
 
 
 class UserLoginSchema(BaseModel):
