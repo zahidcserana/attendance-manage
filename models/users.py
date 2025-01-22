@@ -23,10 +23,13 @@ class UserType(enum.Enum):
     user = "user"
 
 
+
 class User(Base):
+    USER_TYPES = [UserType.admin.value, UserType.user.value]
+
     """Models a user table"""
     __tablename__ = "users"
-    email = Column(String(225), nullable=False, unique=True)
+    email = Column(String(225), index=True, unique=True)
     id = Column(Integer, nullable=False, primary_key=True)
     hashed_password = Column(LargeBinary, nullable=False)
     name = Column(String(225), nullable=False)
