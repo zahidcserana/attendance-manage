@@ -36,6 +36,7 @@ class User(Base):
     name = Column(String(225), nullable=False)
     type = Column(String(20), default=UserType.user)
     is_active = Column(Boolean, default=False)
+    profile_image = Column(String(500), nullable=True)
 
     UniqueConstraint("email", name="uq_user_email")
     PrimaryKeyConstraint("id", name="pk_user_id")

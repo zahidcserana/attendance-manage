@@ -97,40 +97,63 @@ def profile(
 
 @app.post('/upload-profile-image', response_model=str)
 async def upload_profile_image(
+        user_id: int = 40,
         token: str = Depends(oauth2_scheme),
         file: UploadFile = File(description="User profile image"),
+        db: Session = Depends(get_db),
 ):
-    """Uploads a user profile image to Cloudinary and returns the URL."""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found.")
 
-    # Validate file type
-    if file.content_type not in ALLOWED_IMAGE_TYPES:
-        raise HTTPException(status_code=400, detail="Invalid file type. Only JPEG and PNG are allowed.")
+    image_url = await user_db_services.upload_profile_image(file)
 
-    # Validate file size
-    file_size = await file.read()
-    if len(file_size) > MAX_FILE_SIZE_MB * 1024 * 1024:
-        raise HTTPException(status_code=400, detail="File size exceeds 5MB limit.")
+    user.profile_image = image_url
+    db.commit()
+    db.refresh(user)
 
-    # Reset file cursor after reading size
-    await file.seek(0)
-
-    try:
-        # Generate a unique public_id (e.g., user_id + UUID)
-        unique_id = str(uuid.uuid4())
-        upload_result = cloudinary.uploader.upload(
-            file.file,
-            overwrite=True,
-            unique_filename=True,
-            public_id=f"profile_images/{unique_id}",
-            resource_type="image",
-        )
-
-        image_url = upload_result.get("secure_url")  # Get Cloudinary's secure URL
-
-        # Save image URL to DB (pseudo-code)
-        # save_image_url_to_db(user_id, image_url)
-
-        return image_url
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Image upload failed: {str(e)}")
+    return image_url
+    #
+    # """Uploads a user profile image to Cloudinary and returns the URL."""
+    #
+    # # Validate file type
+    # if file.content_type not in ALLOWED_IMAGE_TYPES:
+    #     raise HTTPException(status_code=400, detail="Invalid file type. Only JPEG and PNG are allowed.")
+    #
+    # # Fetch the user from the database
+    # user = db.query(User).filter(User.id == user_id).first()
+    # if not user:
+    #     raise HTTPException(status_code=404, detail="User not found.")
+    #
+    # # Validate file size
+    # file_size = await file.read()
+    # if len(file_size) > MAX_FILE_SIZE_MB * 1024 * 1024:
+    #     raise HTTPException(status_code=400, detail="File size exceeds 5MB limit.")
+    #
+    # # Reset file cursor after reading size
+    # await file.seek(0)
+    #
+    # try:
+    #     # Generate a unique public_id (e.g., user_id + UUID)
+    #     unique_id = str(uuid.uuid4())
+    #     upload_result = cloudinary.uploader.upload(
+    #         file.file,
+    #         overwrite=True,
+    #         unique_filename=True,
+    #         public_id=f"profile_images/{unique_id}",
+    #         resource_type="image",
+    #     )
+    #
+    #     image_url = upload_result.get("secure_url")  # Get Cloudinary's secure URL
+    #
+    #     # Save image URL to DB (pseudo-code)
+    #     # save_image_url_to_db(user_id, image_url)
+    #
+    #     user.profile_image = image_url
+    #     db.commit()
+    #     db.refresh(user)
+    #
+    #     return image_url
+    #
+    # except Exception as e:
+    #     raise HTTPException(status_code=500, detail=f"Image upload failed: {str(e)}")
