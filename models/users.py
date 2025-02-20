@@ -8,6 +8,7 @@ from sqlalchemy import (
     UniqueConstraint,
     PrimaryKeyConstraint
 )
+from sqlalchemy.orm import relationship
 
 import jwt
 import bcrypt
@@ -33,11 +34,12 @@ class User(Base):
     id = Column(Integer, nullable=False, primary_key=True)
     hashed_password = Column(LargeBinary, nullable=False)
     name = Column(String(225), nullable=False)
-    type = Column(Enum(UserType), default=UserType.user)
+    type = Column(String(20), default=UserType.user)
     is_active = Column(Boolean, default=False)
 
     UniqueConstraint("email", name="uq_user_email")
     PrimaryKeyConstraint("id", name="pk_user_id")
+    employees = relationship("Employee", back_populates="user")
 
     def __repr__(self):
         """Returns string representation of model instance"""

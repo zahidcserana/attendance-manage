@@ -5,6 +5,7 @@ from sqlalchemy import select
 
 from models.users import User
 from schemas.users import CreateUserSchema
+from services.db import employees as employee_db_services
 
 
 def create_user(session: Session, user: CreateUserSchema):
@@ -16,6 +17,14 @@ def create_user(session: Session, user: CreateUserSchema):
         session.add(db_user)
         session.commit()
         session.refresh(db_user)
+
+        employee_data = {
+            'user_id': db_user.id,
+            'name': db_user.name,
+            'designation': 'Staff'
+        }
+
+        employee_db_services.create_employee(session, employee_data)
         return db_user
     except IntegrityError:
         session.rollback()

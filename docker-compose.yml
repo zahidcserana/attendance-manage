@@ -11,9 +11,13 @@ services:
       - attendancenetwork
     ports:
       - "5432:5432"
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
 
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: attendance_app
     ports:
       - 8000:8000
@@ -34,3 +38,6 @@ services:
 
 networks:
   attendancenetwork:
+
+volumes:
+  data:

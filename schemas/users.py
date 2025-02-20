@@ -24,3 +24,10 @@ class UserSchema(UserBaseSchema):
 
     class Config:
         orm_mode = True
+
+
+class UserResponse(UserBaseSchema):
+    id: int
+
+    class Config:
+        orm_mode = True
